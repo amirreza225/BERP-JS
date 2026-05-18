@@ -16,6 +16,11 @@ jobs:
           bun-version: latest
 
       - run: bun install --frozen-lockfile
+        env:
+          DATABASE_URL: postgresql://localhost:5432/dummy
+          DIRECT_DATABASE_URL: postgresql://localhost:5432/dummy
+
+      - run: bun run lint
 
       - run: bunx prisma validate
         env:

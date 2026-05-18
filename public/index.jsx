@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { getHealth, getSensorData, createSensorData } from "./lib/api.js";
+import { createSensorData, getHealth, getSensorData } from "./lib/api.js";
 
 function HealthBadge({ health, error }) {
   if (error) {
@@ -17,8 +17,15 @@ function HealthBadge({ health, error }) {
       </span>
     );
   }
+  const degraded = health.status === "degraded";
   return (
-    <span className="inline-flex items-center px-2.5 py-0.5 rounded text-sm font-medium bg-green-100 text-green-800">
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded text-sm font-medium ${
+        degraded
+          ? "bg-yellow-100 text-yellow-800"
+          : "bg-green-100 text-green-800"
+      }`}
+    >
       {health.status} · {health.runtime}
     </span>
   );
@@ -33,9 +40,15 @@ function SensorTable({ rows }) {
       <table className="min-w-full text-sm border border-gray-200 rounded">
         <thead className="bg-gray-100">
           <tr>
-            <th className="px-4 py-2 text-left font-medium text-gray-600">Sensor ID</th>
-            <th className="px-4 py-2 text-left font-medium text-gray-600">Value</th>
-            <th className="px-4 py-2 text-left font-medium text-gray-600">Timestamp</th>
+            <th className="px-4 py-2 text-left font-medium text-gray-600">
+              Sensor ID
+            </th>
+            <th className="px-4 py-2 text-left font-medium text-gray-600">
+              Value
+            </th>
+            <th className="px-4 py-2 text-left font-medium text-gray-600">
+              Timestamp
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -43,7 +56,9 @@ function SensorTable({ rows }) {
             <tr key={row.id} className="border-t border-gray-100">
               <td className="px-4 py-2 font-mono">{row.sensorId}</td>
               <td className="px-4 py-2">{row.value}</td>
-              <td className="px-4 py-2 text-gray-500">{new Date(row.timestamp).toLocaleString()}</td>
+              <td className="px-4 py-2 text-gray-500">
+                {new Date(row.timestamp).toLocaleString()}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -76,10 +91,16 @@ function InsertForm({ onInserted }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap gap-2 items-end mt-3">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap gap-2 items-end mt-3"
+    >
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Sensor ID</label>
+        <label htmlFor="sensorId" className="block text-xs text-gray-500 mb-1">
+          Sensor ID
+        </label>
         <input
+          id="sensorId"
           className="border border-gray-300 rounded px-3 py-1.5 text-sm w-36"
           value={sensorId}
           onChange={(e) => setSensorId(e.target.value)}
@@ -88,8 +109,11 @@ function InsertForm({ onInserted }) {
         />
       </div>
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Value</label>
+        <label htmlFor="value" className="block text-xs text-gray-500 mb-1">
+          Value
+        </label>
         <input
+          id="value"
           className="border border-gray-300 rounded px-3 py-1.5 text-sm w-28"
           type="number"
           step="any"
@@ -107,7 +131,9 @@ function InsertForm({ onInserted }) {
         {loading ? "Inserting…" : "Insert"}
       </button>
       {status && (
-        <span className={`text-sm ${status.ok ? "text-green-700" : "text-red-700"}`}>
+        <span
+          className={`text-sm ${status.ok ? "text-green-700" : "text-red-700"}`}
+        >
           {status.msg}
         </span>
       )}
@@ -136,19 +162,24 @@ function App() {
     }
   }
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    fetchAll();
+  }, []);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <header className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">BERP-JS</h1>
         <p className="text-gray-500 mt-1">
-          Bun · Elysia · React · Prisma · TimescaleDB — pure JavaScript full-stack boilerplate.
+          Bun · Elysia · React · Prisma · TimescaleDB — pure JavaScript
+          full-stack boilerplate.
         </p>
       </header>
 
       <section className="mb-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-2">API Health</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-2">
+          API Health
+        </h2>
         <div className="flex items-center gap-3">
           <HealthBadge health={health} error={healthError} />
           {health && (
@@ -158,13 +189,18 @@ function App() {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-1">Insert Sensor Record</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-1">
+          Insert Sensor Record
+        </h2>
         <InsertForm onInserted={fetchAll} />
       </section>
 
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-1">
-          Latest Sensor Data <span className="font-normal normal-case">({rows.length} records)</span>
+          Latest Sensor Data{" "}
+          <span className="font-normal normal-case">
+            ({rows.length} records)
+          </span>
         </h2>
         <SensorTable rows={rows} />
       </section>
@@ -172,4 +208,31 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="max-w-3xl mx-auto px-4 py-10 text-red-700">
+          <h1 className="text-lg font-bold mb-2">Something went wrong</h1>
+          <pre className="text-sm whitespace-pre-wrap">
+            {this.state.error.message}
+          </pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+createRoot(document.getElementById("root")).render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>,
+);

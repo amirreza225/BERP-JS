@@ -11,9 +11,12 @@ const result = await Bun.build({
 
 if (!result.success) {
   console.error("Frontend build failed:");
-  result.logs.forEach((l) => console.error(l));
+  for (const l of result.logs) console.error(l);
   process.exit(1);
 }
 
 // Copy HTML shell — bundle.js and bundle.css are emitted by Bun.build above
-await Bun.write(".vercel/output/static/index.html", Bun.file("./public/index.html"));
+await Bun.write(
+  ".vercel/output/static/index.html",
+  Bun.file("./public/index.html"),
+);

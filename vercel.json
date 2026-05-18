@@ -3,7 +3,5 @@
   "bunVersion": "1.x",
   "buildCommand": "bun run build",
   "outputDirectory": ".vercel/output/static",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

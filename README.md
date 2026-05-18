@@ -12,9 +12,8 @@ Zero-config, pure JavaScript full-stack boilerplate. No TypeScript. No Vite. No 
 git clone https://github.com/YOURUSERNAME/berp-js-stack my-app
 cd my-app
 cp .env.example .env        # edit DATABASE_URL to point at your PostgreSQL instance
-bun install
+bun install                 # postinstall runs prisma generate automatically
 bunx prisma migrate dev --name init
-bunx prisma generate
 bun run dev
 # → http://localhost:3000
 ```
@@ -128,7 +127,7 @@ This isolates deployment concerns without duplicating route logic.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/health` | Runtime status and timestamp |
+| `GET` | `/api/health` | Runtime and DB status (`status: "ok"` or `"degraded"`, `db: "up"` or `"down"`) |
 | `GET` | `/api/sensor` | Latest 100 sensor records, newest first |
 | `POST` | `/api/sensor` | Insert a sensor record |
 | `GET` | `/*` | SPA fallback — serves `public/index.html` |
@@ -189,3 +188,4 @@ curl http://localhost:3000/some/unknown/route
 | ORM | Prisma (JS mode) |
 | Deployment | Vercel (Bun runtime, Beta) |
 | Language | JavaScript / JSX only |
+| Linter | Biome |

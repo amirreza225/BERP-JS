@@ -3,18 +3,27 @@ import { prisma } from "./lib/prisma.js";
 
 export const app = new Elysia()
 
-  .get("/api/health", () => ({
-    status: "ok",
-    name: "BERP-JS",
-    runtime: "bun",
-    timestamp: new Date().toISOString(),
-  }))
+  .get("/api/health", async () => {
+    let db = "up";
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+    } catch {
+      db = "down";
+    }
+    return {
+      status: db === "up" ? "ok" : "degraded",
+      name: "BERP-JS",
+      runtime: "bun",
+      db,
+      timestamp: new Date().toISOString(),
+    };
+  })
 
   .get("/api/sensor", async () =>
     prisma.sensorData.findMany({
       orderBy: { timestamp: "desc" },
       take: 100,
-    })
+    }),
   )
 
   .post("/api/sensor", async ({ body, set }) => {

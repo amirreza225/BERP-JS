@@ -4,26 +4,30 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev":              "bun run src/index.js",
-    "build":           "bun run build.js",
-    "build:frontend":  "bun run build.js",
-    "start":           "bun run src/index.js",
+    "postinstall": "bunx prisma generate",
+    "dev": "bun run src/index.js",
+    "build": "bun run build.js",
+    "build:frontend": "bun run build.js",
+    "start": "bun run src/index.js",
+    "lint": "biome check .",
+    "format": "biome format --write .",
     "prisma:generate": "bunx prisma generate",
-    "db:migrate":      "bunx prisma migrate dev",
-    "db:studio":       "bunx prisma studio"
+    "db:migrate": "bunx prisma migrate dev",
+    "db:studio": "bunx prisma studio"
   },
   "dependencies": {
-    "@elysiajs/static":    "latest",
-    "@prisma/adapter-pg":  "latest",
-    "@prisma/client":      "latest",
-    "elysia":              "latest",
-    "prisma":              "latest",
-    "react":               "latest",
-    "react-dom":           "latest"
+    "@elysiajs/static": "latest",
+    "@prisma/adapter-pg": "latest",
+    "@prisma/client": "latest",
+    "dotenv": "latest",
+    "elysia": "latest",
+    "prisma": "latest",
+    "react": "latest",
+    "react-dom": "latest"
   },
   "devDependencies": {
-    "dotenv":              "latest",
-    "tailwindcss":         "latest",
-    "bun-plugin-tailwind": "latest"
+    "@biomejs/biome": "^2.4.15",
+    "bun-plugin-tailwind": "latest",
+    "tailwindcss": "latest"
   }
 }

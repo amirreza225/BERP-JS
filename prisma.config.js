@@ -1,11 +1,15 @@
 import dotenv from "dotenv";
+
 dotenv.config({ override: true });
 
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
 
 // DIRECT_DATABASE_URL must be a plain connection (no pgbouncer=true)
 // Prisma migrate needs CREATE DATABASE permission to create a shadow database
-const directUrl = env("DIRECT_DATABASE_URL") || env("DATABASE_URL");
+// process.env used instead of prisma's env() so `prisma generate` doesn't throw
+// when no .env is present (generate doesn't need a DB connection)
+const directUrl =
+  process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || "";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
