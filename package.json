@@ -1,0 +1,29 @@
+{
+  "name": "berp-js-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev":              "bun run src/index.js",
+    "build":           "bun run build.js",
+    "build:frontend":  "bun run build.js",
+    "start":           "bun run src/index.js",
+    "prisma:generate": "bunx prisma generate",
+    "db:migrate":      "bunx prisma migrate dev",
+    "db:studio":       "bunx prisma studio"
+  },
+  "dependencies": {
+    "@elysiajs/static":    "latest",
+    "@prisma/adapter-pg":  "latest",
+    "@prisma/client":      "latest",
+    "elysia":              "latest",
+    "prisma":              "latest",
+    "react":               "latest",
+    "react-dom":           "latest"
+  },
+  "devDependencies": {
+    "dotenv":              "latest",
+    "tailwindcss":         "latest",
+    "bun-plugin-tailwind": "latest"
+  }
+}

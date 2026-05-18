@@ -1,0 +1,18 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model SensorData {
+  id        String   @id @default(cuid())
+  sensorId  String
+  timestamp DateTime @default(now()) @db.Timestamptz(3)
+  value     Float
+  metadata  Json?
+
+  @@index([sensorId, timestamp])
+  @@index([timestamp])
+}

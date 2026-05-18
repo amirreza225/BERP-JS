@@ -1,0 +1,5 @@
+[install]
+# Pin registry if needed — defaults to npm registry
+
+[run]
+# bun run inherits PATH from shell
