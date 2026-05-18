@@ -12,7 +12,7 @@ Zero-config, pure JavaScript full-stack boilerplate. No TypeScript. No Vite. No 
 git clone https://github.com/YOURUSERNAME/berp-js-stack my-app
 cd my-app
 cp .env.example .env        # edit DATABASE_URL to point at your PostgreSQL instance
-bun install                 # postinstall runs prisma generate automatically
+bun install                 # postinstall: prisma generate + lefthook git hooks
 bunx prisma migrate dev --name init
 bun run dev
 # → http://localhost:3000
@@ -148,6 +148,7 @@ Returns `400` with `{ "error": "..." }` if `sensorId` is missing/not a string, o
 - `.env.example` contains placeholder values only.
 - All database credentials are in environment variables.
 - **Authentication is out of scope for v1.** Any public deployment exposing write endpoints must add authentication before going live.
+- **CORS is open (`*`) by default.** Restrict it in `src/app.js` before public production: `.use(cors({ origin: "https://yourdomain.com" }))`.
 
 ---
 

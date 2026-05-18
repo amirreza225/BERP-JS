@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "bunx prisma generate",
+    "postinstall": "bunx prisma generate && ([ -d .git ] && bunx lefthook install || true)",
     "dev": "bun run src/index.js",
     "build": "bun run build.js",
     "build:frontend": "bun run build.js",
@@ -15,7 +15,11 @@
     "db:migrate": "bunx prisma migrate dev",
     "db:studio": "bunx prisma studio"
   },
+  "engines": {
+    "bun": ">=1.1.0"
+  },
   "dependencies": {
+    "@elysiajs/cors": "^1.4.2",
     "@elysiajs/static": "latest",
     "@prisma/adapter-pg": "latest",
     "@prisma/client": "latest",
@@ -28,6 +32,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
     "bun-plugin-tailwind": "latest",
+    "lefthook": "^2.1.6",
     "tailwindcss": "latest"
   }
 }

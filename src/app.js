@@ -1,7 +1,10 @@
+import { cors } from "@elysiajs/cors";
 import { Elysia } from "elysia";
 import { prisma } from "./lib/prisma.js";
 
+// cors() defaults to allow all origins — restrict before public production
 export const app = new Elysia()
+  .use(cors())
 
   .get("/api/health", async () => {
     let db = "up";
