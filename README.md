@@ -140,7 +140,7 @@ This isolates deployment concerns without duplicating route logic.
 { "sensorId": "sensor-1", "value": 42.5, "metadata": {} }
 ```
 
-Returns `400` with `{ "error": "..." }` if `sensorId` is missing/not a string, or `value` is missing/not a number.
+Returns `422` with `{ "error": "..." }` if `sensorId` is missing/not a string, or `value` is missing/not a number. Validated via Elysia TypeBox schema.
 
 ---
 
@@ -168,13 +168,13 @@ curl -X POST http://localhost:3000/api/sensor \
   -H "Content-Type: application/json" \
   -d '{"sensorId":"sensor-1","value":42.5}'
 
-# Bad input → 400
+# Bad input → 422
 curl -X POST http://localhost:3000/api/sensor \
   -H "Content-Type: application/json" \
   -d '{"value":42.5}'
 
-# SPA fallback → returns index.html, not 404
-curl http://localhost:3000/some/unknown/route
+# Seed dev data
+bun run db:seed
 ```
 
 ---

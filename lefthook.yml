@@ -2,3 +2,8 @@ pre-commit:
   commands:
     lint:
       run: bun run lint
+
+pre-push:
+  commands:
+    check:
+      run: bun run check

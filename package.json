@@ -5,14 +5,17 @@
   "type": "module",
   "scripts": {
     "postinstall": "bunx prisma generate && ([ -d .git ] && bunx lefthook install || true)",
-    "dev": "bun run src/index.js",
+    "dev": "bun --hot src/index.js",
     "build": "bun run build.js",
     "build:frontend": "bun run build.js",
     "start": "bun run src/index.js",
+    "check": "bun run lint && bun run build",
     "lint": "biome check .",
     "format": "biome format --write .",
     "prisma:generate": "bunx prisma generate",
     "db:migrate": "bunx prisma migrate dev",
+    "db:reset": "bunx prisma migrate reset",
+    "db:seed": "bun prisma/seed.js",
     "db:studio": "bunx prisma studio"
   },
   "engines": {

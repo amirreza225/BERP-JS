@@ -1,10 +1,21 @@
 import { cors } from "@elysiajs/cors";
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { prisma } from "./lib/prisma.js";
 
 // cors() defaults to allow all origins — restrict before public production
 export const app = new Elysia()
   .use(cors())
+  .onError(({ error, set }) => {
+    set.status = error.status ?? 500;
+    try {
+      // Elysia validation errors serialize schema context as JSON in message;
+      // extract the human-readable summary so the client always gets a string
+      const parsed = JSON.parse(error.message);
+      return { error: parsed.summary ?? parsed.message ?? error.message };
+    } catch {
+      return { error: error.message ?? "Internal server error" };
+    }
+  })
 
   .get("/api/health", async () => {
     let db = "up";
@@ -29,24 +40,21 @@ export const app = new Elysia()
     }),
   )
 
-  .post("/api/sensor", async ({ body, set }) => {
-    if (!body || typeof body !== "object") {
-      set.status = 400;
-      return { error: "Request body must be a JSON object." };
-    }
-    if (!body.sensorId || typeof body.sensorId !== "string") {
-      set.status = 400;
-      return { error: "sensorId is required and must be a string." };
-    }
-    if (typeof body.value !== "number") {
-      set.status = 400;
-      return { error: "value is required and must be a number." };
-    }
-    return prisma.sensorData.create({
-      data: {
-        sensorId: body.sensorId,
-        value: body.value,
-        metadata: body.metadata ?? undefined,
-      },
-    });
-  });
+  .post(
+    "/api/sensor",
+    async ({ body }) =>
+      prisma.sensorData.create({
+        data: {
+          sensorId: body.sensorId,
+          value: body.value,
+          metadata: body.metadata ?? undefined,
+        },
+      }),
+    {
+      body: t.Object({
+        sensorId: t.String({ minLength: 1 }),
+        value: t.Number(),
+        metadata: t.Optional(t.Any()),
+      }),
+    },
+  );
