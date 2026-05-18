@@ -118,8 +118,10 @@ This isolates deployment concerns without duplicating route logic.
 
 **Tailwind in dev vs production:**
 
-- Dev (`bun run dev`): `index.html` loads the Tailwind CDN script (marked with a comment). Zero config, works immediately.
-- Production (`bun run build`): `build.js` uses `bun-plugin-tailwind` to bundle and purge CSS into `.vercel/output/static/`. The CDN script is harmless in the static output — the bundled CSS takes precedence.
+- Dev (`bun run dev`): `index.html` loads the Tailwind CDN script. Bun's Fullstack Dev Server handles JSX transpilation and HMR; no CSS compilation step needed.
+- Production (`bun run build`): `build.js` uses `bun-plugin-tailwind` to bundle CSS into `.vercel/output/static/bundle.css`. The CDN script is replaced with `<link rel="stylesheet" href="/bundle.css" />` in the prod HTML.
+
+**HMR is active in dev.** `await staticPlugin()` enables Bun's Fullstack Dev Server — edit `public/index.jsx` and the browser updates automatically. No Vite, no esbuild watch mode; Bun handles JSX transpilation and HMR natively.
 
 ---
 
@@ -130,7 +132,7 @@ This isolates deployment concerns without duplicating route logic.
 | `GET` | `/api/health` | Runtime and DB status (`status: "ok"` or `"degraded"`, `db: "up"` or `"down"`) |
 | `GET` | `/api/sensor` | Latest 100 sensor records, newest first |
 | `POST` | `/api/sensor` | Insert a sensor record |
-| `GET` | `/*` | SPA fallback — serves `public/index.html` |
+| `GET` | `/` | SPA shell — serves `public/index.html` (Bun HTMLBundle with HMR in dev) |
 
 ### POST /api/sensor
 

@@ -15,8 +15,12 @@ if (!result.success) {
   process.exit(1);
 }
 
-// Copy HTML shell — bundle.js and bundle.css are emitted by Bun.build above
-await Bun.write(
-  ".vercel/output/static/index.html",
-  Bun.file("./public/index.html"),
-);
+// Prod html: swap CDN script → bundle.css link, swap JSX src → bundle.js
+const devHtml = await Bun.file("./public/index.html").text();
+const prodHtml = devHtml
+  .replace('src="./index.jsx"', 'src="/bundle.js"')
+  .replace(
+    '<script src="https://cdn.tailwindcss.com"></script>',
+    '<link rel="stylesheet" href="/bundle.css" />',
+  );
+await Bun.write(".vercel/output/static/index.html", prodHtml);
