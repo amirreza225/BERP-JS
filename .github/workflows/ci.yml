@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - run: bunx prisma validate
+        env:
+          DATABASE_URL: postgresql://localhost:5432/dummy
+          DIRECT_DATABASE_URL: postgresql://localhost:5432/dummy
+
+      - run: bun run build
+        env:
+          NODE_ENV: production
