@@ -16,6 +16,22 @@ bun install                 # postinstall: prisma generate + lefthook git hooks
 bunx prisma migrate dev --name init
 bun run dev
 # → http://localhost:3000
+# → http://localhost:3000/swagger  (API explorer)
+```
+
+---
+
+## Local Database (Docker)
+
+No PostgreSQL installed? Spin one up with a single command:
+
+```bash
+docker compose up -d          # start Postgres + TimescaleDB on :5432
+cp .env.example .env          # default credentials match the compose file
+bun install
+bunx prisma migrate dev --name init
+bun run db:seed               # optional: insert 30 sample sensor records
+bun run dev
 ```
 
 ---
