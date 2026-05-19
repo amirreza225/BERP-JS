@@ -30,6 +30,7 @@
     "@prisma/client": "latest",
     "dotenv": "latest",
     "elysia": "latest",
+    "elysia-helmet": "^3.1.0",
     "prisma": "latest",
     "react": "latest",
     "react-dom": "latest"

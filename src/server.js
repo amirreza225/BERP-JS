@@ -1,10 +1,17 @@
 import { cors } from "@elysiajs/cors";
 import { Elysia, t } from "elysia";
+import { helmet } from "elysia-helmet";
 import { prisma } from "./lib/prisma.js";
 
-// cors() defaults to allow all origins — restrict before public production
 export const app = new Elysia()
-  .use(cors())
+  .use(
+    cors({
+      origin: process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(",")
+        : true,
+    }),
+  )
+  .use(helmet())
   .onError(({ error, set }) => {
     set.status = error.status ?? 500;
     try {
