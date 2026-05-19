@@ -97,9 +97,14 @@ Components are generated into `public/components/ui/`. They do not affect the ba
 vercel --prod
 ```
 
-**Required:** Set `DATABASE_URL` as an environment variable in your Vercel project settings.
+**Required env vars** in Vercel project settings:
 
-**Beta caveat:** The Bun runtime on Vercel (`bunVersion: "1.x"` in `vercel.json`) is currently documented as Beta. Test your specific workload in a staging environment before treating it as production-stable. Validate cold-start behavior and connection pooling under realistic load before relying on it for critical systems.
+| Variable | Value |
+|----------|-------|
+| `DATABASE_URL` | Pooled connection string (pgbouncer OK) |
+| `DIRECT_DATABASE_URL` | Direct connection string (no pgbouncer — used by `prisma migrate deploy` at build time) |
+
+**Note:** `build.js` generates the full [Build Output API](https://vercel.com/docs/build-output-api/v3) layout — static assets in `.vercel/output/static/`, the Elysia function bundled into `.vercel/output/functions/api/[...path].func/` (Bun 1.x runtime), and routing rules in `.vercel/output/config.json` (API routes → function, everything else → SPA fallback). `vercel.json` sets `"framework": null` to bypass Vercel's Elysia auto-detection and use this layout directly. Migrations run automatically at build time via `prisma migrate deploy`.
 
 ---
 
@@ -107,7 +112,7 @@ vercel --prod
 
 ```
 berp-js-stack/
-├── api/[...path].js    Vercel function entrypoint — wraps src/app.js, no .listen()
+├── api/[...path].js    Vercel function entrypoint — wraps src/server.js, no .listen()
 ├── prisma/schema.prisma
 ├── public/
 │   ├── index.html      HTML shell — loads React bundle
@@ -117,16 +122,16 @@ berp-js-stack/
 │   └── lib/api.js      Frontend fetch helpers
 ├── src/
 │   ├── index.js        Local dev server — adds static plugin, calls .listen()
-│   ├── app.js          Shared Elysia app — all API routes live here
+│   ├── server.js       Shared Elysia app — all API routes live here
 │   └── lib/prisma.js   PrismaClient singleton
-├── build.js            Production bundler (bun-plugin-tailwind)
+├── build.js            Production bundler (bun-plugin-tailwind + Build Output API)
 ├── vercel.json
 └── .env.example
 ```
 
-**The `src/app.js` / `src/index.js` / `api/[...path].js` split is intentional:**
+**The `src/server.js` / `src/index.js` / `api/[...path].js` split is intentional:**
 
-- `src/app.js` — pure route logic, no runtime-specific bindings. Importable anywhere.
+- `src/server.js` — pure route logic, no runtime-specific bindings. Importable anywhere. Also exports `default app` so Vercel's framework detector finds a valid Elysia entrypoint (required pre-build scan).
 - `src/index.js` — Bun-specific: static file serving + `.listen()`.
 - `api/[...path].js` — Vercel-specific: exports a `fetch` handler, does not call `.listen()`.
 
@@ -166,7 +171,7 @@ Returns `422` with `{ "error": "..." }` if `sensorId` is missing/not a string, o
 - `.env.example` contains placeholder values only.
 - All database credentials are in environment variables.
 - **Authentication is out of scope for v1.** Any public deployment exposing write endpoints must add authentication before going live.
-- **CORS is open (`*`) by default.** Restrict it in `src/app.js` before public production: `.use(cors({ origin: "https://yourdomain.com" }))`.
+- **CORS is open (`*`) by default.** Restrict it in `src/server.js` before public production: `.use(cors({ origin: "https://yourdomain.com" }))`.
 
 ---
 
@@ -205,6 +210,6 @@ bun run db:seed
 | Styling | Tailwind CSS v4 |
 | Database | PostgreSQL + TimescaleDB |
 | ORM | Prisma (JS mode) |
-| Deployment | Vercel (Bun runtime, Beta) |
+| Deployment | Vercel (Bun 1.x runtime) |
 | Language | JavaScript / JSX only |
 | Linter | Biome |

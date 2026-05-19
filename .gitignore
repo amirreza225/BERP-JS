@@ -1,5 +1,6 @@
 # Build output
 .vercel/output/
+dist/
 
 
 # Prisma generated client
@@ -97,3 +98,5 @@ web_modules/
 .serverless/
 PRD.md
 CLAUDE.md
+.vercel
+.env*.local

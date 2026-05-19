@@ -1,4 +1,4 @@
-import { app } from "../src/app.js";
+import { app } from "../src/server.js";
 
 export default {
   async fetch(request) {

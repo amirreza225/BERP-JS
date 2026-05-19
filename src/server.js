@@ -58,3 +58,5 @@ export const app = new Elysia()
       }),
     },
   );
+
+export default app;

@@ -1,8 +1,8 @@
 import { staticPlugin } from "@elysiajs/static";
 import { swagger } from "@elysiajs/swagger";
 import index from "../public/index.html";
-import { app } from "./app.js";
 import { prisma } from "./lib/prisma.js";
+import { app } from "./server.js";
 
 if (!process.env.DATABASE_URL) {
   console.error("Missing DATABASE_URL — copy .env.example to .env and set it.");
