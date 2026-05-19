@@ -103,6 +103,7 @@ vercel --prod
 |----------|-------|
 | `DATABASE_URL` | Pooled connection string (pgbouncer OK) |
 | `DIRECT_DATABASE_URL` | Direct connection string (no pgbouncer — used by `prisma migrate deploy` at build time) |
+| `CORS_ORIGIN` | *(optional)* Comma-separated allowed origins, e.g. `https://yourdomain.com`. Defaults to `*` if unset. |
 
 **Note:** `build.js` generates the full [Build Output API](https://vercel.com/docs/build-output-api/v3) layout — static assets in `.vercel/output/static/`, the Elysia function bundled into `.vercel/output/functions/api/[...path].func/` (Bun 1.x runtime), and routing rules in `.vercel/output/config.json` (API routes → function, everything else → SPA fallback). `vercel.json` sets `"framework": null` to bypass Vercel's Elysia auto-detection and use this layout directly. Migrations run automatically at build time via `prisma migrate deploy`.
 
@@ -171,7 +172,7 @@ Returns `422` with `{ "error": "..." }` if `sensorId` is missing/not a string, o
 - `.env.example` contains placeholder values only.
 - All database credentials are in environment variables.
 - **Authentication is out of scope for v1.** Any public deployment exposing write endpoints must add authentication before going live.
-- **CORS is open (`*`) by default.** Restrict it in `src/server.js` before public production: `.use(cors({ origin: "https://yourdomain.com" }))`.
+- **CORS is open (`*`) by default.** Set `CORS_ORIGIN=https://yourdomain.com` (comma-separated for multiple origins) to restrict it in production.
 
 ---
 

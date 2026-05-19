@@ -18,10 +18,13 @@ if (!result.success) {
 
 const devHtml = await Bun.file("./public/index.html").text();
 const prodHtml = devHtml
-  .replace('src="./index.jsx"', 'src="/bundle.js"')
   .replace(
-    '<script src="https://cdn.tailwindcss.com"></script>',
+    /<!-- BUILD:CSS -->.*?<!-- \/BUILD:CSS -->/s,
     '<link rel="stylesheet" href="/bundle.css" />',
+  )
+  .replace(
+    /<!-- BUILD:JS -->.*?<!-- \/BUILD:JS -->/s,
+    '<script src="/bundle.js"></script>',
   );
 await Bun.write(".vercel/output/static/index.html", prodHtml);
 
@@ -43,7 +46,6 @@ if (!funcResult.success) {
 await Bun.write(
   `${funcDir}/.vc-config.json`,
   JSON.stringify({
-    runtime: "nodejs20.x",
     handler: "index.js",
     launcherType: "Nodejs",
   }),
