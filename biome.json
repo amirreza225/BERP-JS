@@ -6,7 +6,13 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!.vercel/output", "!dist"]
+    "includes": [
+      "**",
+      "!.vercel/output",
+      "!dist",
+      "!apps/web/public/bundle.js",
+      "!apps/web/public/bundle.css"
+    ]
   },
   "formatter": {
     "enabled": true,

@@ -1,6 +1,16 @@
-import React, { useEffect, useState } from "react";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
+import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import { createSensorData, getHealth, getSensorData } from "./lib/api.js";
+
+const queryClient = new QueryClient();
 
 function HealthBadge({ health, error }) {
   if (error) {
@@ -67,27 +77,23 @@ function SensorTable({ rows }) {
   );
 }
 
-function InsertForm({ onInserted }) {
+function InsertForm() {
   const [sensorId, setSensorId] = useState("");
   const [value, setValue] = useState("");
-  const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createSensorData,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sensorData"] });
+      setSensorId("");
+      setValue("");
+    },
+  });
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
-    setStatus(null);
-    try {
-      await createSensorData({ sensorId, value: parseFloat(value) });
-      setStatus({ ok: true, msg: "Record inserted." });
-      setSensorId("");
-      setValue("");
-      onInserted();
-    } catch (err) {
-      setStatus({ ok: false, msg: err.message });
-    } finally {
-      setLoading(false);
-    }
+    mutation.mutate({ sensorId, value: parseFloat(value) });
   }
 
   return (
@@ -125,46 +131,30 @@ function InsertForm({ onInserted }) {
       </div>
       <button
         type="submit"
-        disabled={loading}
+        disabled={mutation.isPending}
         className="px-4 py-1.5 text-sm rounded bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50"
       >
-        {loading ? "Inserting…" : "Insert"}
+        {mutation.isPending ? "Inserting…" : "Insert"}
       </button>
-      {status && (
-        <span
-          className={`text-sm ${status.ok ? "text-green-700" : "text-red-700"}`}
-        >
-          {status.msg}
-        </span>
+      {mutation.isError && (
+        <span className="text-sm text-red-700">{mutation.error.message}</span>
+      )}
+      {mutation.isSuccess && (
+        <span className="text-sm text-green-700">Record inserted.</span>
       )}
     </form>
   );
 }
 
-function App() {
-  const [health, setHealth] = useState(null);
-  const [healthError, setHealthError] = useState(false);
-  const [rows, setRows] = useState([]);
-
-  async function fetchAll() {
-    try {
-      const h = await getHealth();
-      setHealth(h);
-      setHealthError(false);
-    } catch {
-      setHealthError(true);
-    }
-    try {
-      const data = await getSensorData();
-      setRows(data);
-    } catch {
-      // table stays empty
-    }
-  }
-
-  useEffect(() => {
-    fetchAll();
-  }, []);
+function Home() {
+  const { data: health, isError: healthError } = useQuery({
+    queryKey: ["health"],
+    queryFn: getHealth,
+  });
+  const { data: rows = [] } = useQuery({
+    queryKey: ["sensorData"],
+    queryFn: getSensorData,
+  });
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -174,6 +164,20 @@ function App() {
           Bun · Elysia · React · Prisma · TimescaleDB — pure JavaScript
           full-stack boilerplate.
         </p>
+        <nav className="flex gap-4 mt-4">
+          <Link
+            to="/"
+            className="text-blue-600 hover:underline text-sm font-medium"
+          >
+            Home
+          </Link>
+          <Link
+            to="/about"
+            className="text-blue-600 hover:underline text-sm font-medium"
+          >
+            About
+          </Link>
+        </nav>
       </header>
 
       <section className="mb-8">
@@ -192,7 +196,7 @@ function App() {
         <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-1">
           Insert Sensor Record
         </h2>
-        <InsertForm onInserted={fetchAll} />
+        <InsertForm />
       </section>
 
       <section>
@@ -205,6 +209,49 @@ function App() {
         <SensorTable rows={rows} />
       </section>
     </div>
+  );
+}
+
+function About() {
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">About BERP-JS</h1>
+        <nav className="flex gap-4 mt-4">
+          <Link
+            to="/"
+            className="text-blue-600 hover:underline text-sm font-medium"
+          >
+            Home
+          </Link>
+          <Link
+            to="/about"
+            className="text-blue-600 hover:underline text-sm font-medium"
+          >
+            About
+          </Link>
+        </nav>
+      </header>
+      <p className="text-gray-700">
+        This is an enterprise-ready full-stack boilerplate using Bun, Elysia,
+        React, Prisma, and TimescaleDB. It features Bun Workspaces for monorepo
+        support, React Router for client-side navigation, and React Query for
+        data fetching.
+      </p>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 

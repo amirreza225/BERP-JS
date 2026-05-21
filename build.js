@@ -2,7 +2,7 @@ import tailwind from "bun-plugin-tailwind";
 
 // Frontend
 const result = await Bun.build({
-  entrypoints: ["./public/index.jsx", "./public/globals.css"],
+  entrypoints: ["./apps/web/public/index.jsx", "./apps/web/public/globals.css"],
   outdir: ".vercel/output/static",
   naming: "bundle.[ext]",
   target: "browser",
@@ -16,22 +16,13 @@ if (!result.success) {
   process.exit(1);
 }
 
-const devHtml = await Bun.file("./public/index.html").text();
-const prodHtml = devHtml
-  .replace(
-    /<!-- BUILD:CSS -->.*?<!-- \/BUILD:CSS -->/s,
-    '<link rel="stylesheet" href="/bundle.css" />',
-  )
-  .replace(
-    /<!-- BUILD:JS -->.*?<!-- \/BUILD:JS -->/s,
-    '<script src="/bundle.js"></script>',
-  );
-await Bun.write(".vercel/output/static/index.html", prodHtml);
+const devHtml = await Bun.file("./apps/web/public/index.html").text();
+await Bun.write(".vercel/output/static/index.html", devHtml);
 
 // API function — bundled into Build Output API format so Vercel skips Elysia auto-detection
 const funcDir = ".vercel/output/functions/api/[...path].func";
 const funcResult = await Bun.build({
-  entrypoints: ["./api/[...path].js"],
+  entrypoints: ["./apps/api/api/[...path].js"],
   outdir: funcDir,
   target: "node",
   naming: "index.js",
@@ -46,8 +37,16 @@ if (!funcResult.success) {
 await Bun.write(
   `${funcDir}/.vc-config.json`,
   JSON.stringify({
+    runtime: "nodejs20.x",
     handler: "index.js",
     launcherType: "Nodejs",
+  }),
+);
+
+await Bun.write(
+  `${funcDir}/package.json`,
+  JSON.stringify({
+    type: "module",
   }),
 );
 

@@ -1,12 +1,18 @@
 export async function getHealth() {
   const res = await fetch("/api/health");
-  if (!res.ok) throw new Error("Failed to fetch health status.");
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error(err?.error || "Failed to fetch health status.");
+  }
   return res.json();
 }
 
 export async function getSensorData() {
   const res = await fetch("/api/sensor");
-  if (!res.ok) throw new Error("Failed to fetch sensor data.");
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error(err?.error || "Failed to fetch sensor data.");
+  }
   return res.json();
 }
 

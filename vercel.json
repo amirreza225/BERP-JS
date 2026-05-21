@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "bun install",
-  "buildCommand": "bunx prisma migrate deploy && bun run build",
+  "buildCommand": "bun --cwd packages/db prisma migrate deploy && bun run build",
   "bunVersion": "1.x"
 }

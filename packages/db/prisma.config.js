@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 
-dotenv.config({ override: true });
+dotenv.config({ path: "../../.env", override: true });
 
 import { defineConfig } from "prisma/config";
 

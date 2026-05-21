@@ -1,0 +1,19 @@
+{
+  "name": "@berp/web",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run dev.js",
+    "build": "bun run build.js"
+  },
+  "dependencies": {
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "latest",
+    "@tanstack/react-query": "latest"
+  },
+  "devDependencies": {
+    "bun-plugin-tailwind": "latest",
+    "tailwindcss": "latest"
+  }
+}

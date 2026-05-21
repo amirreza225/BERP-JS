@@ -1,9 +1,11 @@
+import { prisma } from "@berp/db";
 import { cors } from "@elysiajs/cors";
 import { Elysia, t } from "elysia";
 import { helmet } from "elysia-helmet";
-import { prisma } from "./lib/prisma.js";
+import { auth } from "./lib/auth.js";
 
 export const app = new Elysia()
+  .all("/api/auth/*", ({ request }) => auth.handler(request))
   .use(
     cors({
       origin: process.env.CORS_ORIGIN
@@ -13,6 +15,7 @@ export const app = new Elysia()
   )
   .use(helmet())
   .onError(({ error, set }) => {
+    console.error("API error details:", error);
     set.status = error.status ?? 500;
     try {
       // Elysia validation errors serialize schema context as JSON in message;
@@ -37,6 +40,30 @@ export const app = new Elysia()
       runtime: "bun",
       db,
       timestamp: new Date().toISOString(),
+    };
+  })
+
+  .get("/api/debug-db", () => {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) {
+      return { status: "missing" };
+    }
+    let parsedHost = "failed to parse";
+    try {
+      // Node/Bun URL parser needs a protocol to parse hostname correctly,
+      // fallback to regex if it's not a fully qualified URL
+      const hostMatch = dbUrl.match(/@([^/?:#]+)/);
+      parsedHost = hostMatch
+        ? hostMatch[1]
+        : new URL(dbUrl).hostname || "unknown";
+    } catch (e) {
+      parsedHost = `error: ${e.message}`;
+    }
+    return {
+      status: "present",
+      length: dbUrl.length,
+      host: parsedHost,
+      startsWith: `${dbUrl.substring(0, 15)}...`,
     };
   })
 
