@@ -2,6 +2,16 @@
   "name": "berp-js-app",
   "version": "1.0.0",
   "private": true,
+  "description": "Pure JavaScript full-stack starter for Bun, Elysia, React, Prisma, and TimescaleDB.",
+  "homepage": "https://berp-js.vercel.app/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amirreza225/BERP-JS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/amirreza225/BERP-JS/issues"
+  },
+  "license": "MIT",
   "type": "module",
   "workspaces": [
     "apps/*",
@@ -19,6 +29,7 @@
     "test": "vitest",
     "test:e2e": "playwright test",
     "prisma:generate": "bun run --cwd packages/db generate",
+    "prisma:validate": "bunx prisma validate --schema packages/db/prisma/schema.prisma",
     "db:migrate": "bun run --cwd packages/db migrate",
     "db:fresh": "bun run db:reset && bun run db:seed",
     "db:reset": "bun run --cwd packages/db reset",

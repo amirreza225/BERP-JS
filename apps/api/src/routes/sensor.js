@@ -1,5 +1,6 @@
 import { prisma } from "@berp/db";
 import { Elysia, t } from "elysia";
+import { broadcast } from "../lib/broadcast.js";
 
 export const sensorRoutes = new Elysia({ prefix: "/api/sensor" })
   .get(
@@ -53,14 +54,17 @@ export const sensorRoutes = new Elysia({ prefix: "/api/sensor" })
   )
   .post(
     "",
-    async ({ body }) =>
-      prisma.sensorData.create({
+    async ({ body }) => {
+      const record = await prisma.sensorData.create({
         data: {
           sensorId: body.sensorId,
           value: body.value,
           metadata: body.metadata ?? undefined,
         },
-      }),
+      });
+      broadcast(record);
+      return record;
+    },
     {
       body: t.Object({
         sensorId: t.String({ minLength: 1 }),

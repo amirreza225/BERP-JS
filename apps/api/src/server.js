@@ -12,7 +12,7 @@ export const app = new Elysia()
   .use(
     rateLimit({
       duration: 60000,
-      max: 60,
+      max: 200,
       // Prefer server.requestIP() (direct connections, dev); fall back to proxy
       // headers only when the server cannot determine the IP (Vercel serverless).
       generator: (req, server) =>
@@ -44,7 +44,13 @@ export const app = new Elysia()
     }),
   )
   .use(swagger())
-  .onError(({ error, set, code }) => {
+  .onError(({ error, set, code, request }) => {
+    // Non-API 404s are SPA routes — let the server entrypoint serve index.html
+    if (code === "NOT_FOUND") {
+      const { pathname } = new URL(request.url);
+      if (!pathname.startsWith("/api/") && !pathname.startsWith("/swagger"))
+        return;
+    }
     logger.error({ code, err: error }, "Request error");
     set.status = code === "VALIDATION" ? 400 : (error.status ?? 500);
     try {

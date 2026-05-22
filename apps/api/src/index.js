@@ -1,5 +1,7 @@
 import { prisma } from "@berp/db";
 import { staticPlugin } from "@elysiajs/static";
+import { startAggregator } from "./jobs/aggregator.js";
+import { subscribe, unsubscribe } from "./lib/broadcast.js";
 import { validateEnv } from "./lib/env.js";
 import { app } from "./server.js";
 
@@ -35,6 +37,20 @@ const server = app
       "←",
     );
   })
+  .onError(({ code, set }) => {
+    if (code === "NOT_FOUND") {
+      set.status = 200;
+      return Bun.file(`${assetsDir}/index.html`);
+    }
+  })
+  .ws("/api/ws/sensor", {
+    open(ws) {
+      subscribe(ws);
+    },
+    close(ws) {
+      unsubscribe(ws);
+    },
+  })
   .use(await staticPlugin({ assets: assetsDir, prefix: "/" }))
   .get("/", () => Bun.file(`${assetsDir}/index.html`))
   .get("/*", () => Bun.file(`${assetsDir}/index.html`))
@@ -42,8 +58,11 @@ const server = app
 
 logger.info(`BERP-JS running at http://localhost:${server.server.port}`);
 
+const stopAggregator = startAggregator();
+
 process.on("SIGTERM", () => {
   logger.info("SIGTERM received, shutting down");
+  stopAggregator();
   server.stop();
   prisma.$disconnect().finally(() => process.exit(0));
 });

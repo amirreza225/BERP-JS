@@ -28,7 +28,7 @@ jobs:
           BETTER_AUTH_SECRET: test-secret
           BETTER_AUTH_URL: http://localhost:3000
 
-      - run: bunx prisma validate
+      - run: bun run prisma:validate
         env:
           DATABASE_URL: postgresql://localhost:5432/dummy
           DIRECT_DATABASE_URL: postgresql://localhost:5432/dummy

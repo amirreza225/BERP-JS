@@ -1,145 +1,261 @@
-# BERP-JS Stack
+# BERP-JS
 
-**Bun · Elysia · React · Prisma · TimescaleDB**
+Pure JavaScript full-stack starter for **Bun, Elysia, React, Prisma, and TimescaleDB**.
 
-An enterprise-ready, zero-config, pure JavaScript full-stack boilerplate. No TypeScript. No Vite. No Next.js. Leveraging Bun workspaces for seamless monorepo scaling.
+[Live preview](https://berp-js.vercel.app/) · [API docs](https://berp-js.vercel.app/swagger) · [Use this template](https://github.com/amirreza225/BERP-JS/generate)
 
----
+![BERP-JS dashboard](./docs/screenshot.png)
 
-## What's Included
+BERP-JS gives you a working app, not a pile of configuration. It includes a Bun-native API, React dashboard, Prisma data layer, Better Auth, TimescaleDB migrations, Docker, Vercel deployment output, Vitest, Playwright, and Biome.
 
-- **Monorepo Architecture**: Clean separation with `apps/api`, `apps/web`, and `packages/db`.
-- **Backend (API)**: Elysia.js with strict TypeBox environment validation, global rate limiting via `elysia-rate-limit`, and structured logging via Pino.
-- **Frontend (Web)**: React 19, React Router (DOM) for client-side routing, and TanStack React Query for declarative data fetching. 
-- **Database**: Prisma ORM with PostgreSQL & TimescaleDB optimizations.
-- **Authentication**: Fully integrated with Better Auth for secure session management.
-- **Testing**: Pre-configured with Vitest for unit tests and Playwright for E2E testing.
-- **Deployment**: Dockerized with a multi-stage `Dockerfile` and configured for Vercel.
+No TypeScript. No Vite. No Next.js. No SSR framework.
 
----
+## Why This Exists
+
+Most full-stack starters optimize for TypeScript-heavy meta-frameworks. BERP-JS is for developers who want a small, inspectable JavaScript codebase with a real database-backed example and a production deployment path.
+
+It is especially useful for:
+
+- telemetry dashboards
+- IoT and sensor projects
+- internal tools
+- analytics panels
+- Bun and Elysia experiments
+- hackathon projects that need a real backend quickly
+
+## Stack
+
+| Layer | Technology |
+| --- | --- |
+| Runtime | Bun |
+| API | Elysia |
+| Frontend | React 19, React Router, TanStack Query |
+| Database | PostgreSQL and TimescaleDB |
+| ORM | Prisma |
+| Auth | Better Auth |
+| Styling | Tailwind CSS v4 |
+| Tests | Vitest, Playwright |
+| Quality | Biome, Lefthook |
+| Deploy | Vercel Build Output API, Docker |
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/amirreza225/BERP-JS my-app
+git clone https://github.com/amirreza225/BERP-JS.git my-app
 cd my-app
-cp .env.example .env        # edit DATABASE_URL to point at your PostgreSQL instance
-bun install                 # installs dependencies and generates Prisma client
-bun run --cwd packages/db migrate --name init
-bun run dev
-# → http://localhost:3000
-# → http://localhost:3000/swagger  (API explorer)
-```
-
----
-
-## Local Database (Docker)
-
-No PostgreSQL installed? Spin one up with a single command:
-
-```bash
-docker compose up -d          # start Postgres + TimescaleDB on :5432
-cp .env.example .env          # default credentials match the compose file
+cp .env.example .env
+docker compose up -d
 bun install
-bun run --cwd packages/db migrate --name init
-bun run --cwd packages/db seed # optional: insert sample data
+bun run db:migrate
+bun run db:seed
 bun run dev
 ```
 
----
+Open:
 
-## Architecture
+- App: <http://localhost:3000>
+- Swagger API docs: <http://localhost:3000/swagger>
 
-The application is structured as a Bun Workspaces monorepo:
+## What You Get
+
+- Bun workspaces monorepo with `apps/api`, `apps/web`, and `packages/db`
+- Elysia API with health, auth, and sensor data routes
+- Swagger docs mounted at `/swagger`
+- React dashboard that reads and writes live sensor data
+- Prisma schema and migrations for PostgreSQL and TimescaleDB
+- TimescaleDB hypertable migration for `SensorData`
+- Better Auth session tables and server integration
+- Docker Compose database for local development
+- Vercel production build output
+- Biome formatting/linting
+- Vitest unit tests and Playwright E2E wiring
+
+## Project Structure
 
 ```text
-berp-js-stack/
+BERP-JS/
 ├── apps/
-│   ├── api/                 # Elysia Backend API
-│   │   ├── api/[...path].js # Vercel function entrypoint
-│   │   ├── src/server.js    # Shared Elysia app and Better Auth setup
-│   │   ├── src/index.js     # Dev server entrypoint
-│   │   └── src/lib/         # Auth, Env Validation, and Logger
-│   └── web/                 # React Frontend
-│       ├── public/          # Source JSX, HTML, CSS, and build output
-│       └── dev.js           # Native Bun dev watcher
+│   ├── api/
+│   │   ├── api/[...path].js
+│   │   └── src/
+│   │       ├── index.js
+│   │       ├── server.js
+│   │       ├── lib/
+│   │       └── routes/
+│   └── web/
+│       ├── public/
+│       └── src/
 ├── packages/
-│   └── db/                  # Database Package
-│       ├── prisma/          # Schema, migrations, and seed
-│       └── src/             # Prisma client exports
-├── build.js                 # Vercel production bundler
-├── playwright.config.js     # E2E test configuration
-├── Dockerfile               # Multi-stage production image
+│   └── db/
+│       ├── prisma/
+│       └── src/
+├── build.js
+├── docker-compose.yml
+├── Dockerfile
 └── vercel.json
 ```
 
----
-
-## Development
-
-The single `bun run dev` command starts everything:
-1. It spins up the `apps/api` Elysia server on port 3000.
-2. It starts a lightweight file watcher (`apps/web/dev.js`) that uses Bun's native bundler to compile JSX and Tailwind CSS into the `apps/web/public/` directory on the fly.
-
-No Vite or Webpack required.
-
----
-
-## Authentication (Better Auth)
-
-Authentication is handled via `better-auth`. The database schema already includes the necessary tables (`User`, `Session`, `Account`, `Verification`).
-
-- Configuration: `apps/api/src/lib/auth.js`
-- Routes: Automatically mounted at `/api/auth/*`
-- Note: You must provide a valid `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` in your `.env` file.
-
----
-
-## Testing & Observability
-
-- **Unit/Integration**: Run `bun test` or `bunx vitest` at the root.
-- **E2E Tests**: Run `bunx playwright test`. Tests live in the `e2e/` folder.
-- **Logging**: The API uses `pino` for high-performance structured JSON logging.
-- **Env Validation**: On server start, `apps/api/src/lib/env.js` ensures all required variables are present and correct, crashing early if your `.env` is misconfigured.
-
----
-
-## Deploying
-
-### Docker (AWS / GCP / Azure)
+## Scripts
 
 ```bash
-docker build -t berp-app .
-docker run -p 3000:3000 --env-file .env berp-app
+bun run dev             # Start web watcher and API server
+bun run build           # Build Vercel output
+bun run lint            # Run Biome checks
+bun run format          # Format with Biome
+bun run test            # Run Vitest
+bun run test:e2e        # Run Playwright
+bun run prisma:validate # Validate the Prisma schema
+bun run db:migrate      # Run Prisma migrate dev
+bun run db:seed         # Seed sample sensor data
+bun run db:studio       # Open Prisma Studio
 ```
 
-### Vercel
+## Environment
+
+Start from `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Runtime database connection |
+| `DIRECT_DATABASE_URL` | Direct Prisma migration connection |
+| `BETTER_AUTH_URL` | Public app URL for Better Auth |
+| `BETTER_AUTH_SECRET` | Secret used by Better Auth |
+
+For production, generate a strong `BETTER_AUTH_SECRET` and set `CORS_ORIGIN` to your production domain.
+
+## Deploy To Vercel
+
+Set these environment variables in Vercel:
+
+- `DATABASE_URL`
+- `DIRECT_DATABASE_URL`
+- `BETTER_AUTH_URL`
+- `BETTER_AUTH_SECRET`
+- `CORS_ORIGIN`
+
+Then deploy:
 
 ```bash
 vercel --prod
 ```
 
-**Required env vars** in Vercel project settings:
-- `DATABASE_URL` 
-- `DIRECT_DATABASE_URL` (For `prisma migrate deploy` at build time)
-- `BETTER_AUTH_SECRET`
-- `BETTER_AUTH_URL`
+The custom `build.js` generates Vercel Build Output API files so the React app and Elysia serverless function deploy together.
 
-**Note:** `build.js` generates the full Build Output API v3 layout. The Vercel configuration bypasses Elysia auto-detection to use this custom layout directly, enabling seamless monorepo deployment.
+## Docker
 
----
+```bash
+docker compose up -d
+docker build -t berp-js .
+docker run -p 3000:3000 --env-file .env berp-js
+```
 
-## Stack
+## Deploy to Railway
 
-| Layer | Technology |
-|-------|-----------|
-| Runtime | Bun 1.x |
-| Backend | Elysia |
-| Frontend | React 19, React Router, React Query |
-| Auth | Better Auth |
-| Styling | Tailwind CSS v4 |
-| Database | PostgreSQL + TimescaleDB |
-| ORM | Prisma (JS mode) |
-| Testing | Vitest, Playwright |
-| Deployment | Docker, Vercel |
-| Linter | Biome |
+1. Install the Railway CLI and log in:
+   ```bash
+   npm install -g @railway/cli
+   railway login
+   ```
+2. Initialise a project and add PostgreSQL:
+   ```bash
+   railway init
+   railway add --plugin postgresql
+   ```
+3. Set secrets (Railway auto-provides `DATABASE_URL`):
+   ```bash
+   railway variables set \
+     DIRECT_DATABASE_URL="$DATABASE_URL" \
+     BETTER_AUTH_SECRET="$(openssl rand -hex 32)" \
+     CORS_ORIGIN="https://<your-app>.up.railway.app"
+   ```
+4. Deploy:
+   ```bash
+   railway up
+   ```
+
+The `Dockerfile` in this repo works with Railway out of the box.
+
+## Deploy to Fly.io
+
+1. Install Fly CLI and log in:
+   ```bash
+   brew install flyctl
+   fly auth login
+   ```
+2. Launch the app (skip auto-deploy):
+   ```bash
+   fly launch --no-deploy
+   ```
+3. Provision and attach a PostgreSQL cluster:
+   ```bash
+   fly postgres create --name berp-js-db
+   fly postgres attach berp-js-db
+   ```
+   Fly sets `DATABASE_URL` automatically after attach.
+4. Set remaining secrets:
+   ```bash
+   fly secrets set \
+     DIRECT_DATABASE_URL="<postgres-connection-string>" \
+     BETTER_AUTH_SECRET="$(openssl rand -hex 32)" \
+     CORS_ORIGIN="https://<your-app>.fly.dev"
+   ```
+5. Deploy:
+   ```bash
+   fly deploy
+   ```
+
+## Adding shadcn/ui Components
+
+BERP-JS uses plain Tailwind CSS v4. shadcn/ui components are copy-paste source, so no CLI or TypeScript is required.
+
+1. Add the `cn` utility dependencies:
+   ```bash
+   bun add --cwd apps/web clsx tailwind-merge
+   ```
+2. Create `apps/web/src/lib/utils.js`:
+   ```js
+   import { clsx } from "clsx";
+   import { twMerge } from "tailwind-merge";
+   export function cn(...inputs) {
+     return twMerge(clsx(inputs));
+   }
+   ```
+3. Browse [ui.shadcn.com](https://ui.shadcn.com/docs/components), copy the source of any component into `apps/web/src/components/ui/`.
+4. Remove TypeScript annotations (`interface`, `: Type`, `as Type`) and rename any `class:` props to `className`.
+
+Tailwind v4 picks up new utility classes automatically — no config changes needed.
+
+## Charting
+
+`/chart` renders a pure-SVG line chart of the most recent 100 sensor readings, one line per sensor ID. No charting library is required. The component is in `apps/web/src/index.jsx` (`SensorLineChart`).
+
+## Background Jobs
+
+`apps/api/src/jobs/aggregator.js` exports `startAggregator()`, which runs a `setInterval` every 60 seconds, counts total sensor records, and logs the result. It is started in `apps/api/src/index.js` and shut down cleanly on `SIGTERM`.
+
+Extend it with any periodic work: data rollups, alert checks, cache warming, etc.
+
+## WebSocket Telemetry Stream
+
+The API exposes a WebSocket endpoint at `/api/ws/sensor`. Every successful `POST /api/sensor` broadcasts the new record to all connected clients.
+
+The `/live` page in the React app subscribes and displays events in real time.
+
+> **Note:** WebSocket requires a persistent server process. It works in self-hosted deployments (Docker, Railway, Fly.io) but is not available on Vercel serverless.
+
+
+## Contributing
+
+Contributions are welcome. Good first issues include docs improvements, deployment guides, tests, examples, and UI polish.
+
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request.
+
+## License
+
+MIT
