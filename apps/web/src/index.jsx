@@ -525,8 +525,19 @@ function ChartPage() {
 function LivePage() {
   const [events, setEvents] = useState([]);
   const [status, setStatus] = useState("connecting");
+  const isVercel = window.location.hostname.endsWith(".vercel.app");
+  const { data: polledRows = [] } = useQuery({
+    queryKey: ["sensorData", "live"],
+    queryFn: getSensorData,
+    refetchInterval: isVercel ? 3000 : false,
+    enabled: isVercel,
+  });
 
   useEffect(() => {
+    if (isVercel) {
+      setStatus("polling");
+      return;
+    }
     const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
     const ws = new WebSocket(`${proto}//${window.location.host}/api/ws/sensor`);
     ws.onopen = () => setStatus("connected");
@@ -541,7 +552,12 @@ function LivePage() {
       }
     };
     return () => ws.close();
-  }, []);
+  }, [isVercel]);
+
+  useEffect(() => {
+    if (!isVercel) return;
+    setEvents(polledRows.slice(0, 50));
+  }, [isVercel, polledRows]);
 
   const badgeTone =
     {
@@ -549,6 +565,7 @@ function LivePage() {
       connecting: "slate",
       disconnected: "amber",
       error: "red",
+      polling: "teal",
     }[status] ?? "slate";
 
   return (
@@ -559,8 +576,9 @@ function LivePage() {
           <StatusBadge tone={badgeTone}>{status}</StatusBadge>
         </div>
         <p className="mb-6 text-sm text-slate-400">
-          Real-time sensor events via WebSocket. Insert data on the home page to
-          see it stream here.
+          {isVercel
+            ? "Vercel serverless does not keep WebSocket connections open, so this page polls the sensor API every 3 seconds."
+            : "Real-time sensor events via WebSocket. Insert data on the home page to see it stream here."}
         </p>
         {events.length === 0 ? (
           <p className="rounded border border-white/10 bg-white/[0.05] p-6 text-sm text-slate-400">
@@ -593,9 +611,17 @@ function LivePage() {
           </div>
         )}
         <p className="mt-4 text-xs text-slate-500">
-          Streams from <code className="font-mono">/api/ws/sensor</code>. Works
-          in self-hosted mode (Docker, Railway, Fly.io). Not available on Vercel
-          serverless.
+          {isVercel ? (
+            <>
+              Polls <code className="font-mono">/api/sensor</code>. WebSocket
+              streaming is available in self-hosted mode.
+            </>
+          ) : (
+            <>
+              Streams from <code className="font-mono">/api/ws/sensor</code>.
+              Works in self-hosted mode (Docker, Railway, Fly.io).
+            </>
+          )}
         </p>
       </main>
     </Shell>

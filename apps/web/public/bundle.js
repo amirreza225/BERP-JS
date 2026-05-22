@@ -22747,7 +22747,18 @@ function ChartPage() {
 function LivePage() {
   const [events, setEvents] = import_react.useState([]);
   const [status, setStatus] = import_react.useState("connecting");
+  const isVercel = window.location.hostname.endsWith(".vercel.app");
+  const { data: polledRows = [] } = useQuery({
+    queryKey: ["sensorData", "live"],
+    queryFn: getSensorData,
+    refetchInterval: isVercel ? 3000 : false,
+    enabled: isVercel
+  });
   import_react.useEffect(() => {
+    if (isVercel) {
+      setStatus("polling");
+      return;
+    }
     const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
     const ws = new WebSocket(`${proto}//${window.location.host}/api/ws/sensor`);
     ws.onopen = () => setStatus("connected");
@@ -22760,12 +22771,18 @@ function LivePage() {
       } catch {}
     };
     return () => ws.close();
-  }, []);
+  }, [isVercel]);
+  import_react.useEffect(() => {
+    if (!isVercel)
+      return;
+    setEvents(polledRows.slice(0, 50));
+  }, [isVercel, polledRows]);
   const badgeTone = {
     connected: "teal",
     connecting: "slate",
     disconnected: "amber",
-    error: "red"
+    error: "red",
+    polling: "teal"
   }[status] ?? "slate";
   return /* @__PURE__ */ jsx_dev_runtime.jsxDEV(Shell, {
     children: /* @__PURE__ */ jsx_dev_runtime.jsxDEV("main", {
@@ -22786,7 +22803,7 @@ function LivePage() {
         }, undefined, true, undefined, this),
         /* @__PURE__ */ jsx_dev_runtime.jsxDEV("p", {
           className: "mb-6 text-sm text-slate-400",
-          children: "Real-time sensor events via WebSocket. Insert data on the home page to see it stream here."
+          children: isVercel ? "Vercel serverless does not keep WebSocket connections open, so this page polls the sensor API every 3 seconds." : "Real-time sensor events via WebSocket. Insert data on the home page to see it stream here."
         }, undefined, false, undefined, this),
         events.length === 0 ? /* @__PURE__ */ jsx_dev_runtime.jsxDEV("p", {
           className: "rounded border border-white/10 bg-white/[0.05] p-6 text-sm text-slate-400",
@@ -22840,15 +22857,26 @@ function LivePage() {
         }, undefined, false, undefined, this),
         /* @__PURE__ */ jsx_dev_runtime.jsxDEV("p", {
           className: "mt-4 text-xs text-slate-500",
-          children: [
-            "Streams from ",
-            /* @__PURE__ */ jsx_dev_runtime.jsxDEV("code", {
-              className: "font-mono",
-              children: "/api/ws/sensor"
-            }, undefined, false, undefined, this),
-            ". Works in self-hosted mode (Docker, Railway, Fly.io). Not available on Vercel serverless."
-          ]
-        }, undefined, true, undefined, this)
+          children: isVercel ? /* @__PURE__ */ jsx_dev_runtime.jsxDEV(jsx_dev_runtime.Fragment, {
+            children: [
+              "Polls ",
+              /* @__PURE__ */ jsx_dev_runtime.jsxDEV("code", {
+                className: "font-mono",
+                children: "/api/sensor"
+              }, undefined, false, undefined, this),
+              ". WebSocket streaming is available in self-hosted mode."
+            ]
+          }, undefined, true, undefined, this) : /* @__PURE__ */ jsx_dev_runtime.jsxDEV(jsx_dev_runtime.Fragment, {
+            children: [
+              "Streams from ",
+              /* @__PURE__ */ jsx_dev_runtime.jsxDEV("code", {
+                className: "font-mono",
+                children: "/api/ws/sensor"
+              }, undefined, false, undefined, this),
+              ". Works in self-hosted mode (Docker, Railway, Fly.io)."
+            ]
+          }, undefined, true, undefined, this)
+        }, undefined, false, undefined, this)
       ]
     }, undefined, true, undefined, this)
   }, undefined, false, undefined, this);
