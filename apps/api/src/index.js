@@ -1,6 +1,5 @@
 import { prisma } from "@berp/db";
 import { staticPlugin } from "@elysiajs/static";
-import { swagger } from "@elysiajs/swagger";
 import { validateEnv } from "./lib/env.js";
 import { app } from "./server.js";
 
@@ -19,13 +18,32 @@ const isProd = process.env.NODE_ENV === "production";
 const assetsDir = isProd ? "../../.vercel/output/static" : "../web/public";
 
 const server = app
+  .derive(() => ({ start: Date.now() }))
   .onRequest(({ request }) => {
-    logger.info(`${request.method} ${new URL(request.url).pathname}`);
+    logger.info(
+      { method: request.method, path: new URL(request.url).pathname },
+      "→",
+    );
   })
-  .use(swagger())
+  .onAfterHandle(({ request, start }) => {
+    logger.info(
+      {
+        method: request.method,
+        path: new URL(request.url).pathname,
+        durationMs: Date.now() - start,
+      },
+      "←",
+    );
+  })
   .use(await staticPlugin({ assets: assetsDir, prefix: "/" }))
   .get("/", () => Bun.file(`${assetsDir}/index.html`))
   .get("/*", () => Bun.file(`${assetsDir}/index.html`))
   .listen(process.env.PORT || 3000);
 
 logger.info(`BERP-JS running at http://localhost:${server.server.port}`);
+
+process.on("SIGTERM", () => {
+  logger.info("SIGTERM received, shutting down");
+  server.stop();
+  prisma.$disconnect().finally(() => process.exit(0));
+});

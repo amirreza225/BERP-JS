@@ -19903,7 +19903,7 @@ function useMutation(options, queryClient) {
   }
   return { ...result, mutate, mutateAsync: result.mutate };
 }
-// public/index.jsx
+// src/index.jsx
 var import_react = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
@@ -22103,17 +22103,21 @@ function useViewTransitionState(to, { relative } = {}) {
 // ../../node_modules/.bun/react-router@7.15.1+d0e719b86e9808b5/node_modules/react-router/dist/development/index.mjs
 "use client";
 
-// public/lib/api.js
+// src/lib/api.js
 async function getHealth() {
   const res = await fetch("/api/health");
-  if (!res.ok)
-    throw new Error("Failed to fetch health status.");
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error(err?.error?.message ?? err?.error ?? "Failed to fetch health status.");
+  }
   return res.json();
 }
 async function getSensorData() {
   const res = await fetch("/api/sensor");
-  if (!res.ok)
-    throw new Error("Failed to fetch sensor data.");
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error(err?.error?.message ?? err?.error ?? "Failed to fetch sensor data.");
+  }
   return res.json();
 }
 async function createSensorData(data2) {
@@ -22124,12 +22128,12 @@ async function createSensorData(data2) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => null);
-    throw new Error(err?.error || "Failed to create sensor data.");
+    throw new Error(err?.error?.message ?? err?.error ?? "Failed to create sensor data.");
   }
   return res.json();
 }
 
-// public/index.jsx
+// src/index.jsx
 var jsx_dev_runtime = __toESM(require_jsx_dev_runtime(), 1);
 var queryClient = new QueryClient;
 function HealthBadge({ health, error }) {

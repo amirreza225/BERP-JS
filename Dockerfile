@@ -42,4 +42,6 @@ ENV NODE_ENV=production
 # run the app
 USER bun
 EXPOSE 3000/tcp
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD bun --eval "const r=await fetch('http://localhost:3000/api/health');process.exit(r.ok?0:1)" || exit 1
 ENTRYPOINT [ "bun", "run", "start" ]

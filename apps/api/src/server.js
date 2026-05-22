@@ -1,9 +1,12 @@
 import { prisma } from "@berp/db";
 import { cors } from "@elysiajs/cors";
-import { Elysia, t } from "elysia";
+import { swagger } from "@elysiajs/swagger";
+import { Elysia } from "elysia";
 import { helmet } from "elysia-helmet";
 import { rateLimit } from "elysia-rate-limit";
 import { auth } from "./lib/auth.js";
+import { logger } from "./lib/logger.js";
+import { sensorRoutes } from "./routes/sensor.js";
 
 export const app = new Elysia()
   .use(
@@ -27,17 +30,37 @@ export const app = new Elysia()
         : true,
     }),
   )
-  .use(helmet())
-  .onError(({ error, set }) => {
-    console.error("API error details:", error);
-    set.status = error.status ?? 500;
+  .use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          "script-src": [
+            "'self'",
+            "'unsafe-inline'",
+            "https://cdn.jsdelivr.net",
+          ],
+        },
+      },
+    }),
+  )
+  .use(swagger())
+  .onError(({ error, set, code }) => {
+    logger.error({ code, err: error }, "Request error");
+    set.status = code === "VALIDATION" ? 400 : (error.status ?? 500);
     try {
       // Elysia validation errors serialize schema context as JSON in message;
       // extract the human-readable summary so the client always gets a string
       const parsed = JSON.parse(error.message);
-      return { error: parsed.summary ?? parsed.message ?? error.message };
+      return {
+        error: {
+          message: parsed.summary ?? parsed.message ?? error.message,
+          code,
+        },
+      };
     } catch {
-      return { error: error.message ?? "Internal server error" };
+      return {
+        error: { message: error.message ?? "Internal server error", code },
+      };
     }
   })
 
@@ -60,7 +83,7 @@ export const app = new Elysia()
   .get("/api/debug-db", ({ set }) => {
     if (process.env.NODE_ENV === "production") {
       set.status = 404;
-      return { error: "Not found" };
+      return { error: { message: "Not found" } };
     }
     const dbUrl = process.env.DATABASE_URL;
     if (!dbUrl) {
@@ -85,30 +108,6 @@ export const app = new Elysia()
     };
   })
 
-  .get("/api/sensor", async () =>
-    prisma.sensorData.findMany({
-      orderBy: { timestamp: "desc" },
-      take: 100,
-    }),
-  )
-
-  .post(
-    "/api/sensor",
-    async ({ body }) =>
-      prisma.sensorData.create({
-        data: {
-          sensorId: body.sensorId,
-          value: body.value,
-          metadata: body.metadata ?? undefined,
-        },
-      }),
-    {
-      body: t.Object({
-        sensorId: t.String({ minLength: 1 }),
-        value: t.Number(),
-        metadata: t.Optional(t.Any()),
-      }),
-    },
-  );
+  .use(sensorRoutes);
 
 export default app;

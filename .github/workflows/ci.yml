@@ -22,6 +22,12 @@ jobs:
 
       - run: bun run lint
 
+      - run: bun run test
+        env:
+          DATABASE_URL: postgresql://localhost:5432/dummy
+          BETTER_AUTH_SECRET: test-secret
+          BETTER_AUTH_URL: http://localhost:3000
+
       - run: bunx prisma validate
         env:
           DATABASE_URL: postgresql://localhost:5432/dummy

@@ -2,7 +2,7 @@ import tailwind from "bun-plugin-tailwind";
 
 // Frontend
 const result = await Bun.build({
-  entrypoints: ["./apps/web/public/index.jsx", "./apps/web/public/globals.css"],
+  entrypoints: ["./apps/web/src/index.jsx", "./apps/web/src/globals.css"],
   outdir: ".vercel/output/static",
   naming: "bundle.[ext]",
   target: "browser",
@@ -50,13 +50,15 @@ await Bun.write(
   }),
 );
 
-// Routing: /api/* → function, then try static files, then SPA fallback
+// Routing: API and Swagger docs use the function, then try static files,
+// then SPA fallback.
 await Bun.write(
   ".vercel/output/config.json",
   JSON.stringify({
     version: 3,
     routes: [
       { src: "^/api/(.*)", dest: "/api/[...path]" },
+      { src: "^/swagger(?:/.*)?$", dest: "/api/[...path]" },
       { handle: "filesystem" },
       { src: "/(.*)", dest: "/index.html", status: 200 },
     ],

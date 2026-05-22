@@ -21,7 +21,7 @@ An enterprise-ready, zero-config, pure JavaScript full-stack boilerplate. No Typ
 ## Quick Start
 
 ```bash
-git clone https://github.com/YOURUSERNAME/berp-js-stack my-app
+git clone https://github.com/amirreza225/BERP-JS my-app
 cd my-app
 cp .env.example .env        # edit DATABASE_URL to point at your PostgreSQL instance
 bun install                 # installs dependencies and generates Prisma client

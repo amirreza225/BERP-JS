@@ -9,4 +9,8 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  trustedOrigins: [process.env.BETTER_AUTH_URL].filter(Boolean),
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === "production",
+  },
 });
