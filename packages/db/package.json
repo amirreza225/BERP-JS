@@ -11,12 +11,12 @@
     "studio": "bunx prisma studio"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "latest",
-    "@prisma/client": "latest",
-    "dotenv": "latest",
-    "pg": "latest"
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.4.2",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
-    "prisma": "latest"
+    "prisma": "^7.8.0"
   }
 }

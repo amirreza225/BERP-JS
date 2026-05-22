@@ -7,12 +7,14 @@ generator client {
 }
 
 model SensorData {
-  id        String   @id @default(cuid())
+  id        String   @default(cuid())
   sensorId  String
   timestamp DateTime @default(now()) @db.Timestamptz(3)
   value     Float
   metadata  Json?
 
+  @@id([id, timestamp])
+  @@index([id])
   @@index([sensorId, timestamp])
   @@index([timestamp])
 }

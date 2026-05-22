@@ -9,7 +9,7 @@ An enterprise-ready, zero-config, pure JavaScript full-stack boilerplate. No Typ
 ## What's Included
 
 - **Monorepo Architecture**: Clean separation with `apps/api`, `apps/web`, and `packages/db`.
-- **Backend (API)**: Elysia.js with strict TypeBox environment validation and structured logging via Pino.
+- **Backend (API)**: Elysia.js with strict TypeBox environment validation, global rate limiting via `elysia-rate-limit`, and structured logging via Pino.
 - **Frontend (Web)**: React 19, React Router (DOM) for client-side routing, and TanStack React Query for declarative data fetching. 
 - **Database**: Prisma ORM with PostgreSQL & TimescaleDB optimizations.
 - **Authentication**: Fully integrated with Better Auth for secure session management.
@@ -56,19 +56,19 @@ The application is structured as a Bun Workspaces monorepo:
 berp-js-stack/
 ├── apps/
 │   ├── api/                 # Elysia Backend API
+│   │   ├── api/[...path].js # Vercel function entrypoint
 │   │   ├── src/server.js    # Shared Elysia app and Better Auth setup
 │   │   ├── src/index.js     # Dev server entrypoint
 │   │   └── src/lib/         # Auth, Env Validation, and Logger
 │   └── web/                 # React Frontend
-│       ├── public/          # Static assets & bundled output
-│       ├── dev.js           # Native Bun dev watcher
-│       └── ...              # React components
+│       ├── public/          # Source JSX, HTML, CSS, and build output
+│       └── dev.js           # Native Bun dev watcher
 ├── packages/
 │   └── db/                  # Database Package
-│       ├── prisma/          # Schema and migrations
-│       └── src/             # Generated client exports
-├── e2e/                     # Playwright tests
+│       ├── prisma/          # Schema, migrations, and seed
+│       └── src/             # Prisma client exports
 ├── build.js                 # Vercel production bundler
+├── playwright.config.js     # E2E test configuration
 ├── Dockerfile               # Multi-stage production image
 └── vercel.json
 ```

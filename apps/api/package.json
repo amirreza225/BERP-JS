@@ -9,12 +9,13 @@
   "dependencies": {
     "@berp/db": "workspace:*",
     "@elysiajs/cors": "^1.4.2",
-    "@elysiajs/static": "latest",
+    "@elysiajs/static": "^1.4.10",
     "@elysiajs/swagger": "^1.3.1",
     "@sinclair/typebox": "^0.34.49",
-    "better-auth": "latest",
-    "elysia": "latest",
+    "better-auth": "^1.6.11",
+    "elysia": "^1.4.28",
     "elysia-helmet": "^3.1.0",
+    "elysia-rate-limit": "^4.6.2",
     "pino": "^10.3.1"
   }
 }

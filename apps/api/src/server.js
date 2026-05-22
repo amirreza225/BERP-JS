@@ -2,9 +2,23 @@ import { prisma } from "@berp/db";
 import { cors } from "@elysiajs/cors";
 import { Elysia, t } from "elysia";
 import { helmet } from "elysia-helmet";
+import { rateLimit } from "elysia-rate-limit";
 import { auth } from "./lib/auth.js";
 
 export const app = new Elysia()
+  .use(
+    rateLimit({
+      duration: 60000,
+      max: 60,
+      // Prefer server.requestIP() (direct connections, dev); fall back to proxy
+      // headers only when the server cannot determine the IP (Vercel serverless).
+      generator: (req, server) =>
+        server?.requestIP(req)?.address ??
+        req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+        req.headers.get("x-real-ip") ??
+        "unknown",
+    }),
+  )
   .all("/api/auth/*", ({ request }) => auth.handler(request))
   .use(
     cors({
@@ -43,7 +57,11 @@ export const app = new Elysia()
     };
   })
 
-  .get("/api/debug-db", () => {
+  .get("/api/debug-db", ({ set }) => {
+    if (process.env.NODE_ENV === "production") {
+      set.status = 404;
+      return { error: "Not found" };
+    }
     const dbUrl = process.env.DATABASE_URL;
     if (!dbUrl) {
       return { status: "missing" };
