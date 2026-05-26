@@ -2,6 +2,7 @@ import { prisma } from "@berp/db";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 import { Elysia } from "elysia";
+import { compression } from "elysia-compress";
 import { helmet } from "elysia-helmet";
 import { rateLimit } from "elysia-rate-limit";
 import { auth } from "./lib/auth.js";
@@ -43,6 +44,7 @@ export const app = new Elysia()
       },
     }),
   )
+  .use(compression())
   .use(swagger())
   .onError(({ error, set, code, request }) => {
     // Non-API 404s are SPA routes — let the server entrypoint serve index.html
